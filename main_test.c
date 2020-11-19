@@ -1,8 +1,8 @@
 #include<stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-
+#include <time.h>
+#include "newSleep.h"
 
 typedef struct {
     int HP;
@@ -70,9 +70,11 @@ void showEnemyInfo(Enemy* enemy)
 
 int ifCriticalHit()
 {
+
     int k = rand()%2;
     return k;
 }
+
 
 //int main(char* herotxt, char* enemytxt, char* seconds)
 int main()
@@ -80,7 +82,7 @@ int main()
     // Use readFile to create a linked list
 
     Hero hero;
-    FILE* fHero = fopen("hero.txt", "r");
+    FILE* fHero = fopen("/Users/Carl/Documents/UCP/hero.txt", "r");
 
     if (fHero == NULL)
     {
@@ -102,13 +104,13 @@ int main()
         for(int j=0;j<strlen(newstr[4])-1;++j) {
             hero.heroName[j] = newstr[4][j];
         }
-    
+
         fclose(fHero);
     }
 
     linkedList* enemyList = (linkedList*)malloc(sizeof(linkedList));
     (*enemyList).head = NULL;
-    FILE* fEnemy = fopen("enemies.txt", "r");
+    FILE* fEnemy = fopen("/Users/Carl/Documents/UCP/enemies.txt", "r");
     if (fEnemy == NULL)
     {
         perror("Error opening file: ");
@@ -134,9 +136,10 @@ int main()
             printf("%s\n",enemy->enemyName);
             node->data = enemy;
             node->next = NULL;
-            LinkedListNode* newnode = (LinkedListNode*)malloc(sizeof(LinkedListNode));
-            node->next = newnode;
-            node = newnode;
+            LinkedListNode* pNode = (LinkedListNode*)malloc(sizeof(LinkedListNode));
+            node->next = pNode;
+            node = pNode;
+            node->next = NULL;
         }while(fgets(str, 100, fEnemy)!=NULL);
 
         fclose(fEnemy);
@@ -145,6 +148,7 @@ int main()
 
     //文件读取与list完成
     printf("Welcome to the auto RPG ! \n");
+    newSleep(5);
     system("clear");
     printf("Hero:\n");
     printf("%s\t\t", hero.heroName);
@@ -154,11 +158,11 @@ int main()
     printf("\tMED: %d\n\n", hero.MED);
 
     printf("Enemies:\n");
-    LinkedListNode* tmp = (LinkedListNode*)malloc(sizeof(LinkedListNode));
+    LinkedListNode* tmp;
     tmp =  enemyList->head;
-    for(int i=0; i<2;++i)
+    while(tmp->next!= NULL)
     {
-        
+
         printf("%s\t    ", tmp->data->enemyName);
         printf("HP: %d", tmp->data->HP);
         printf("\tATK: %d", tmp->data->ATK);
@@ -166,20 +170,28 @@ int main()
         tmp = tmp->next;
     }
 
-
+    newSleep(5);
+    system("clear");
 
     Enemy *newEnemy = (Enemy*)malloc(sizeof(Enemy));
     newEnemy = enemyList->head->data;
 //    printf("%d",newEnemy->HP);
 //    newEnemy->HP = 100;
+    int fullHP = hero.HP;
     while(hero.HP>0)
     {
         //fight
-        
+
         // hero begins
+        if(newEnemy == NULL)
+        {
+            printf("Arlen defeats all enemies! The world is saved! \n");
+            break;
+        }
+
         int damage = 0;
-	
-        if(ifCriticalHit()) //double hit
+        int flag = ifCriticalHit();
+        if(flag) //double hit
         {
             damage = hero.ATK * 2 - newEnemy->DEF;
         }
@@ -192,23 +204,34 @@ int main()
         if(newEnemy->HP<=0)
             newEnemy->HP = 0;
         showHeroInfo(&hero);
-        
+
         if(damage>0)
         {
-      
-            printf("\t%s attack %s, dealing %d damage!\n\n", hero.heroName,newEnemy->enemyName,damage);
+
+            if(flag)
+            {
+                printf("\t%s attack %s,Critical hit!! dealing %d damage!\n\n", hero.heroName,newEnemy->enemyName,damage);
+            }
+            else
+            {
+                printf("\t%s attack %s, dealing %d damage!\n\n", hero.heroName,newEnemy->enemyName, damage);
+            }
+
 
         }
         else
         {
             printf("\thero missed\n\n");
         }
-	
+
         showEnemyInfo(newEnemy);
 
         //******************
         // ENEMY ATTACKs
-        if(ifCriticalHit()) //double hit
+        newSleep(5);
+        system("clear");
+        int flag1 = ifCriticalHit();
+        if(flag1) //double hit
         {
             damage = hero.ATK * 2 - newEnemy->DEF;
         }
@@ -217,12 +240,34 @@ int main()
             damage = hero.ATK - newEnemy->DEF;
         }
         hero.HP -=damage;
+//        if(hero.HP<=(int)(0.3*fullHP) && hero.HP>0 && hero.MED>0)
+//        {
+//            hero.HP = fullHP;
+//            hero.MED--;
+//        }
+
         if(hero.HP<=0)
-            hero.HP = 0;
+        {    hero.HP = 0;
+
+        }
         showHeroInfo(&hero);
         if(damage>0)
         {
-            printf("\t%s attack %s, dealing %d damage!\n\n", newEnemy->enemyName,hero.heroName,damage);
+            if(hero.HP<=(int)(0.3*fullHP) && hero.HP>0 && hero.MED>0)
+            {
+                hero.HP = fullHP;
+                hero.MED--;
+                printf("\t%s is badly injured, eating 1 medicine. HP is restored!\n", hero.heroName);
+
+            }
+            if(flag1)
+            {
+                printf("\t%s attack %s,Critical hit!! dealing %d damage!\n\n", newEnemy->enemyName,hero.heroName,damage);
+            }
+            else
+            {
+                printf("\t%s attack %s, dealing %d damage!\n\n", newEnemy->enemyName, hero.heroName, damage);
+            }
 
         }
         else
@@ -231,12 +276,13 @@ int main()
         }
 
         showEnemyInfo(newEnemy);
-
-        if(newEnemy->HP<=0)
+        newSleep(5);
+        system("clear");
+        if(newEnemy->HP==0)
         {
-            if(enemyList->head->next == NULL)
+            if(newEnemy == NULL)
             {
-                printf("Enemhy fail\n");
+                printf("Enemies fail\n");
                 break;
             }
             else
@@ -250,9 +296,8 @@ int main()
 
         if(hero.HP<=0)
         {
-
-                printf("Hero fail\n");
-                break;
+                printf("Arlen loses the battle! The world is doomed! \n");
+            break;
         }
 
     }
