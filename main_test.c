@@ -1,7 +1,7 @@
 #include<stdio.h>
-#include "newSleep.h"
 #include <string.h>
 #include <stdlib.h>
+
 
 
 typedef struct {
@@ -80,7 +80,7 @@ int main()
     // Use readFile to create a linked list
 
     Hero hero;
-    FILE* fHero = fopen("/Users/Carl/Documents/UCP/hero.txt", "r");
+    FILE* fHero = fopen("hero.txt", "r");
 
     if (fHero == NULL)
     {
@@ -99,16 +99,16 @@ int main()
         hero.ATK = atoi(newstr[1]);
         hero.DEF = atoi(newstr[2]);
         hero.MED = atoi(newstr[3]);
-        for(int j=0;j<strlen(newstr[4]);++j) {
+        for(int j=0;j<strlen(newstr[4])-1;++j) {
             hero.heroName[j] = newstr[4][j];
         }
-        printf("%s\n",hero.heroName);
+    
         fclose(fHero);
     }
 
     linkedList* enemyList = (linkedList*)malloc(sizeof(linkedList));
     (*enemyList).head = NULL;
-    FILE* fEnemy = fopen("/Users/Carl/Documents/UCP/enemies.txt", "r");
+    FILE* fEnemy = fopen("enemies.txt", "r");
     if (fEnemy == NULL)
     {
         perror("Error opening file: ");
@@ -127,7 +127,7 @@ int main()
             enemy->HP = atoi(newstr[0]);
             enemy->ATK = atoi(newstr[1]);
             enemy->DEF = atoi(newstr[2]);
-            for(int j=0;j<strlen(newstr[3]);++j) {
+            for(int j=0;j<strlen(newstr[3])-1;++j) {
                 enemy->enemyName[j] = newstr[3][j];
             }
 
@@ -145,21 +145,22 @@ int main()
 
     //文件读取与list完成
     printf("Welcome to the auto RPG ! \n");
-//    system("cls");
+    system("clear");
     printf("Hero:\n");
-    printf("%s", hero.heroName);
-    printf("\tHP: %d", hero.HP);
+    printf("%s\t\t", hero.heroName);
+    printf("HP: %d", hero.HP);
     printf("\tATK: %d", hero.ATK);
     printf("\tDEF: %d", hero.DEF);
     printf("\tMED: %d\n\n", hero.MED);
 
     printf("Enemies:\n");
+    LinkedListNode* tmp = (LinkedListNode*)malloc(sizeof(LinkedListNode));
+    tmp =  enemyList->head;
     for(int i=0; i<2;++i)
     {
-        LinkedListNode* tmp = (LinkedListNode*)malloc(sizeof(LinkedListNode));
-        tmp =  enemyList->head;
-        printf("%s", tmp->data->enemyName);
-        printf("\t\tHP: %d", tmp->data->HP);
+        
+        printf("%s\t    ", tmp->data->enemyName);
+        printf("HP: %d", tmp->data->HP);
         printf("\tATK: %d", tmp->data->ATK);
         printf("\tDEF: %d\n", tmp->data->DEF);
         tmp = tmp->next;
@@ -174,9 +175,10 @@ int main()
     while(hero.HP>0)
     {
         //fight
+        
         // hero begins
         int damage = 0;
-
+	
         if(ifCriticalHit()) //double hit
         {
             damage = hero.ATK * 2 - newEnemy->DEF;
@@ -190,16 +192,18 @@ int main()
         if(newEnemy->HP<=0)
             newEnemy->HP = 0;
         showHeroInfo(&hero);
+        
         if(damage>0)
         {
-            printf("%s attack %s, dealing %d damage!\n", hero.heroName,newEnemy->enemyName,damage);
+      
+            printf("\t%s attack %s, dealing %d damage!\n\n", hero.heroName,newEnemy->enemyName,damage);
 
         }
         else
         {
-            printf("hero missed\n");
+            printf("\thero missed\n\n");
         }
-
+	
         showEnemyInfo(newEnemy);
 
         //******************
@@ -218,12 +222,12 @@ int main()
         showHeroInfo(&hero);
         if(damage>0)
         {
-            printf("%s attack %s, dealing %d damage!\n", newEnemy->enemyName,hero.heroName,damage);
+            printf("\t%s attack %s, dealing %d damage!\n\n", newEnemy->enemyName,hero.heroName,damage);
 
         }
         else
         {
-            printf("enemy missed\n");
+            printf("\tenemy missed\n\n");
         }
 
         showEnemyInfo(newEnemy);
